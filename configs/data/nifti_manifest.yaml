@@ -1,0 +1,76 @@
+# @package _global_
+data:
+  num_classes: 4
+  train_manifest: ${paths.manifest_dir}/train.csv
+  val_manifest: ${paths.manifest_dir}/val.csv
+  test_manifest: ${paths.manifest_dir}/test.csv
+  image_key: image
+  mask_key: mask
+  patch_size: [96, 96, 96]
+  spacing: null
+  intensity:
+    normalize_nonzero: true
+  augmentation:
+    spatial_prob: 0.2
+    intensity_prob: 0.15
+  require_topology_cache: true
+  topology_descriptor_version: v1
+  num_workers: 4
+  batch_size: 2
+  loader:
+    pin_memory: true
+    persistent_workers: true
+    prefetch_factor: 2
+    drop_last: false
+  manifest_builder:
+    image_dir: ${paths.processed_image_dir}
+    mask_dir: ${paths.processed_mask_dir}
+    image_globs: ["*.nii", "*.nii.gz"]
+    mask_globs: ["*.nii", "*.nii.gz"]
+    mask_suffixes: ["_mask", "-mask", "_seg", "-seg", "_label", "-label"]
+    dataset_name: mri_dataset
+    val_fraction: 0.15
+    test_fraction: 0.15
+    split_seed: ${seed}
+    metadata_csv: null
+    metadata_sample_id_column: sample_id
+    vendor_column: vendor
+    site_column: site_id
+    protocol_column: protocol
+    vendor_holdout: []
+    ood_split_name: ood
+  preprocessing:
+    source_image_dir: ${paths.raw_image_dir}
+    source_mask_dir: ${paths.raw_mask_dir}
+    output_image_dir: ${paths.processed_image_dir}
+    output_mask_dir: ${paths.processed_mask_dir}
+    image_globs: ["*.nii", "*.nii.gz"]
+    mask_globs: ["*.nii", "*.nii.gz"]
+    mask_suffixes: ["_mask", "-mask", "_seg", "-seg", "_label", "-label"]
+    canonical_orientation: true
+    target_spacing: null
+    normalize_nonzero: true
+  sampler:
+    topology_balanced: false
+    samples_per_topology: 1
+  cardiac_challenges:
+    output_dir: ${paths.cardiac_processed_dir}
+    acdc_root: null
+    mnms1_root: null
+    mnms2_root: null
+    mnms1_metadata_csv: null
+    mnms2_metadata_csv: null
+    metadata_sample_id_columns: ["External code", "external_code", "ID", "id", "patient_id", "sample_id"]
+    metadata_vendor_columns: ["Vendor", "vendor", "vendor_name", "scanner_vendor"]
+    metadata_site_columns: ["Centre", "Center", "site", "site_id", "centre"]
+    metadata_protocol_columns: ["VendorName", "protocol", "scanner_model", "field_strength"]
+    mnms1_vendor_holdout: []
+    train_datasets: ["mnms1"]
+    external_ood_datasets: ["acdc", "mnms2"]
+    val_fraction: 0.15
+    test_fraction: 0.15
+    split_seed: ${seed}
+    include_acdc_testing: true
+    include_mnms1_unlabelled: false
+    include_mnms2_la: false
+    target_label_schema: "0=background,1=LV,2=MYO,3=RV"

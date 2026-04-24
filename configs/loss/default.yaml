@@ -1,0 +1,15 @@
+# @package _global_
+loss:
+  lambda_metric: 0.2
+  lambda_dist: 0.05
+  seg:
+    dice_weight: 1.0
+    ce_weight: 1.0
+    include_background: false
+  metric:
+    type: supcon
+    temperature: 0.1
+    positive_distance: 0.25
+    negative_distance: 1.0
+  dist:
+    epsilon: 1.0e-6

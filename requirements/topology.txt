@@ -1,0 +1,5 @@
+-r base.txt
+scikit-image
+gudhi
+giotto-tda
+networkx

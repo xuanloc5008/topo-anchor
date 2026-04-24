@@ -1,0 +1,214 @@
+data:
+  num_classes: 4
+  train_manifest: ${paths.manifest_dir}/train.csv
+  val_manifest: ${paths.manifest_dir}/val.csv
+  test_manifest: ${paths.manifest_dir}/test.csv
+  image_key: image
+  mask_key: mask
+  patch_size:
+  - 96
+  - 96
+  - 96
+  spacing: null
+  intensity:
+    normalize_nonzero: true
+  augmentation:
+    spatial_prob: 0.2
+    intensity_prob: 0.15
+  require_topology_cache: true
+  topology_descriptor_version: v1
+  num_workers: 4
+  batch_size: 2
+  manifest_builder:
+    image_dir: ${paths.processed_image_dir}
+    mask_dir: ${paths.processed_mask_dir}
+    image_globs:
+    - '*.nii'
+    - '*.nii.gz'
+    mask_globs:
+    - '*.nii'
+    - '*.nii.gz'
+    mask_suffixes:
+    - _mask
+    - -mask
+    - _seg
+    - -seg
+    - _label
+    - -label
+    dataset_name: mri_dataset
+    val_fraction: 0.15
+    test_fraction: 0.15
+    split_seed: ${seed}
+    metadata_csv: null
+    metadata_sample_id_column: sample_id
+    vendor_column: vendor
+    site_column: site_id
+    protocol_column: protocol
+    vendor_holdout: []
+    ood_split_name: ood
+  preprocessing:
+    source_image_dir: ${paths.raw_image_dir}
+    source_mask_dir: ${paths.raw_mask_dir}
+    output_image_dir: ${paths.processed_image_dir}
+    output_mask_dir: ${paths.processed_mask_dir}
+    image_globs:
+    - '*.nii'
+    - '*.nii.gz'
+    mask_globs:
+    - '*.nii'
+    - '*.nii.gz'
+    mask_suffixes:
+    - _mask
+    - -mask
+    - _seg
+    - -seg
+    - _label
+    - -label
+    canonical_orientation: true
+    target_spacing: null
+    normalize_nonzero: true
+  sampler:
+    topology_balanced: false
+    samples_per_topology: 1
+  cardiac_challenges:
+    output_dir: ${paths.cardiac_processed_dir}
+    acdc_root: null
+    mnms1_root: null
+    mnms2_root: null
+    mnms1_metadata_csv: null
+    mnms2_metadata_csv: null
+    metadata_sample_id_columns:
+    - External code
+    - external_code
+    - ID
+    - id
+    - patient_id
+    - sample_id
+    metadata_vendor_columns:
+    - Vendor
+    - vendor
+    - vendor_name
+    - scanner_vendor
+    metadata_site_columns:
+    - Centre
+    - Center
+    - site
+    - site_id
+    - centre
+    metadata_protocol_columns:
+    - VendorName
+    - protocol
+    - scanner_model
+    - field_strength
+    mnms1_vendor_holdout: []
+    train_datasets:
+    - mnms1
+    external_ood_datasets:
+    - acdc
+    - mnms2
+    val_fraction: 0.15
+    test_fraction: 0.15
+    split_seed: ${seed}
+    include_acdc_testing: true
+    include_mnms1_unlabelled: false
+    include_mnms2_la: false
+    target_label_schema: 0=background,1=LV,2=MYO,3=RV
+model:
+  in_channels: 1
+  num_classes: ${data.num_classes}
+  channels:
+  - 32
+  - 64
+  - 128
+  - 256
+  topo_dim: 128
+  app_dim: 64
+  token_dim: 128
+  dropout: 0.1
+  attention_heads: 4
+  mamba:
+    backend: mamba_ssm
+    d_state: 16
+    d_conv: 4
+    expand: 2
+  anchor:
+    eps_sigma: 1.0e-05
+    eps_distance: 1.0e-06
+train:
+  deterministic: true
+  accumulate_grad_batches: 1
+  gradient_clip_val: 1.0
+  log_every_n_steps: 10
+  optimizer:
+    name: adamw
+    lr: 0.0001
+    weight_decay: 1.0e-05
+  scheduler:
+    name: cosine
+    warmup_epochs: 5
+trainer:
+  max_epochs: 100
+  accelerator: auto
+  devices: 1
+  precision: 16-mixed
+  fast_dev_run: false
+  val_check_interval: 1.0
+loss:
+  lambda_metric: 0.2
+  lambda_dist: 0.05
+  seg:
+    dice_weight: 1.0
+    ce_weight: 1.0
+    include_background: false
+  metric:
+    type: supcon
+    temperature: 0.1
+    positive_distance: 0.25
+    negative_distance: 1.0
+  dist:
+    epsilon: 1.0e-06
+eval:
+  threshold: null
+  calibration_gamma: 0.01
+  ece_bins: 15
+  save_predictions: true
+  compute_surface_metrics: true
+  topology_compare_predictions: true
+  domain_columns:
+  - split
+  - dataset_name
+  - vendor
+  - site_id
+  - protocol
+paths:
+  root: ${hydra:runtime.cwd}
+  data_dir: ${paths.root}/data
+  raw_image_dir: ${paths.data_dir}/raw/images
+  raw_mask_dir: ${paths.data_dir}/raw/masks
+  processed_image_dir: ${paths.data_dir}/processed/images
+  processed_mask_dir: ${paths.data_dir}/processed/masks
+  cardiac_processed_dir: ${paths.data_dir}/processed/cardiac_challenges
+  manifest_dir: ${paths.data_dir}/manifests
+  split_dir: ${paths.data_dir}/splits
+  topology_cache_dir: ${paths.data_dir}/topology_cache
+  output_dir: ${paths.root}/reports
+  log_dir: ${paths.output_dir}/logs
+  checkpoint_dir: ${paths.output_dir}/checkpoints
+  prediction_dir: ${paths.output_dir}/predictions
+  infer_manifest: null
+  checkpoint_path: null
+  ood_manifest: ${paths.manifest_dir}/ood.csv
+seed: 42
+project_name: topoanchor
+topology:
+  descriptor_version: ${data.topology_descriptor_version}
+  include_aggregate_foreground: true
+  use_gudhi: true
+  use_gtda: true
+  persistence:
+    max_dimension: 2
+    top_k_lifetimes: 16
+  vectorization:
+    include_persistence_entropy: true
+  cache:
+    update_manifests: true

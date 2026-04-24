@@ -1,0 +1,11 @@
+-r train.txt
+-r topology.txt
+-r eval.txt
+-r viz.txt
+pytest
+pytest-cov
+ruff
+black
+isort
+mypy
+pre-commit

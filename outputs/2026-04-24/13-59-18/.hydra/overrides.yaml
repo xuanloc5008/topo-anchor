@@ -1,0 +1,5 @@
+- data.cardiac_challenges.acdc_root="/Volumes/Transcend/ACDC-dataset"
+- data.cardiac_challenges.mnms1_root="/Volumes/Transcend/M&M1"
+- data.cardiac_challenges.mnms2_root="/Volumes/Transcend/MnM2"
+- data.cardiac_challenges.mnms1_metadata_csv="/Volumes/Transcend/M&M1/211230_M&Ms_Dataset_information_diagnosis_opendataset.csv"
+- data.cardiac_challenges.mnms1_vendor_holdout=[VendorD]

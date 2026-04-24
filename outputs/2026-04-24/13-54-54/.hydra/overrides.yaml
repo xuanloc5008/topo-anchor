@@ -1,0 +1,2 @@
+- model.mamba.backend=conv_fallback
+- trainer.fast_dev_run=true

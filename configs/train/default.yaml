@@ -1,0 +1,27 @@
+# @package _global_
+train:
+  deterministic: true
+  accumulate_grad_batches: 1
+  gradient_clip_val: 1.0
+  log_every_n_steps: 10
+  matmul_precision: high
+  compile:
+    enabled: false
+    mode: default
+  optimizer:
+    name: adamw
+    lr: 1.0e-4
+    weight_decay: 1.0e-5
+  scheduler:
+    name: cosine
+    warmup_epochs: 5
+
+trainer:
+  max_epochs: 100
+  accelerator: auto
+  devices: 1
+  precision: 16-mixed
+  fast_dev_run: false
+  val_check_interval: 1.0
+  num_sanity_val_steps: 2
+  deterministic: false

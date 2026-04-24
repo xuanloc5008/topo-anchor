@@ -1,0 +1,24 @@
+defaults:
+  - data: nifti_manifest
+  - model: topology_anchored
+  - train: default
+  - loss: default
+  - eval: default
+  - paths: local
+  - _self_
+
+seed: 42
+project_name: topoanchor
+
+topology:
+  descriptor_version: ${data.topology_descriptor_version}
+  include_aggregate_foreground: true
+  use_gudhi: true
+  use_gtda: true
+  persistence:
+    max_dimension: 2
+    top_k_lifetimes: 16
+  vectorization:
+    include_persistence_entropy: true
+  cache:
+    update_manifests: true

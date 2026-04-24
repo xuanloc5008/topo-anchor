@@ -1,0 +1,18 @@
+# @package _global_
+model:
+  in_channels: 1
+  num_classes: ${data.num_classes}
+  channels: [32, 64, 128, 256]
+  topo_dim: 128
+  app_dim: 64
+  token_dim: 128
+  dropout: 0.1
+  attention_heads: 4
+  mamba:
+    backend: mamba_ssm
+    d_state: 16
+    d_conv: 4
+    expand: 2
+  anchor:
+    eps_sigma: 1.0e-5
+    eps_distance: 1.0e-6

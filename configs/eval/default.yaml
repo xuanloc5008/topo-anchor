@@ -1,0 +1,9 @@
+# @package _global_
+eval:
+  threshold: null
+  calibration_gamma: 0.01
+  ece_bins: 15
+  save_predictions: true
+  compute_surface_metrics: true
+  topology_compare_predictions: true
+  domain_columns: ["split", "dataset_name", "vendor", "site_id", "protocol"]

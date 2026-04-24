@@ -1,0 +1,50 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "topoanchor"
+version = "0.1.0"
+description = "Topology-anchored, context-modulated 3D MRI segmentation"
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "Research use"}
+authors = [{name = "TopoAnchor contributors"}]
+dependencies = [
+  "einops",
+  "hydra-core",
+  "lightning",
+  "monai",
+  "nibabel",
+  "numpy",
+  "omegaconf",
+  "pandas",
+  "pydantic",
+  "pyyaml",
+  "rich",
+  "scipy",
+  "scikit-image",
+  "torch",
+  "tqdm"
+]
+
+[project.optional-dependencies]
+topology = ["gudhi", "giotto-tda"]
+dev = ["pytest", "pytest-cov", "ruff", "black", "isort", "mypy"]
+viz = ["matplotlib", "plotly", "seaborn", "umap-learn"]
+eval = ["scikit-learn", "statsmodels"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.black]
+line-length = 100
+target-version = ["py310"]

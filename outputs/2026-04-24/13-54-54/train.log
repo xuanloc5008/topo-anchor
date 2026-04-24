@@ -1,0 +1,5 @@
+[2026-04-24 13:54:57,026][lightning.pytorch.utilities.rank_zero][INFO] - Using 16bit Automatic Mixed Precision (AMP)
+[2026-04-24 13:54:57,030][lightning.pytorch.utilities.rank_zero][INFO] - GPU available: True (mps), used: True
+[2026-04-24 13:54:57,030][lightning.pytorch.utilities.rank_zero][INFO] - TPU available: False, using: 0 TPU cores
+[2026-04-24 13:54:57,030][lightning.pytorch.utilities.rank_zero][INFO] - 💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+[2026-04-24 13:54:57,030][lightning.pytorch.utilities.rank_zero][INFO] - Running in `fast_dev_run` mode: will run the requested loop using 1 batch(es). Logging and checkpointing is suppressed.

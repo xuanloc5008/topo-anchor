@@ -1,0 +1,14 @@
+[2026-04-24 13:52:01,930][matplotlib][WARNING] - /Users/xuanloc/.matplotlib is not a writable directory
+[2026-04-24 13:52:01,931][matplotlib][WARNING] - Matplotlib created a temporary cache directory at /var/folders/s0/93s512d135s1swchzk_dy_1m0000gn/T/matplotlib-tgastlka because there was an issue with the default path (/Users/xuanloc/.matplotlib); it is highly recommended to set the MPLCONFIGDIR environment variable to a writable directory, in particular to speed up the import of Matplotlib and to better support multiprocessing.
+[2026-04-24 13:52:06,987][matplotlib.font_manager][WARNING] - Matplotlib is building the font cache; this may take a moment.
+[2026-04-24 13:52:19,508][matplotlib.font_manager][INFO] - Failed to extract font properties from /System/Library/PrivateFrameworks/FontServices.framework/Resources/Reserved/PingFangUI.ttc: Can not load face (locations (loca) table missing; error code 0x90)
+[2026-04-24 13:52:19,528][matplotlib.font_manager][INFO] - Failed to extract font properties from /System/Library/Fonts/LastResort.otf: tuple indices must be integers or slices, not str
+[2026-04-24 13:52:19,540][matplotlib.font_manager][INFO] - Failed to extract font properties from /System/Library/Fonts/SFIndia.ttc: Can not load face (SFNT font table missing; error code 0x8e)
+[2026-04-24 13:52:19,556][matplotlib.font_manager][INFO] - Failed to extract font properties from /System/Library/Fonts/Apple Color Emoji.ttc: Could not set the fontsize (invalid pixel size; error code 0x17)
+[2026-04-24 13:52:19,561][matplotlib.font_manager][INFO] - Failed to extract font properties from /System/Library/Fonts/Supplemental/NISC18030.ttf: Could not set the fontsize (invalid pixel size; error code 0x17)
+[2026-04-24 13:52:19,607][matplotlib.font_manager][INFO] - generated new fontManager
+[2026-04-24 13:52:31,666][lightning.pytorch.utilities.rank_zero][INFO] - Using bfloat16 Automatic Mixed Precision (AMP)
+[2026-04-24 13:52:31,675][lightning.pytorch.utilities.rank_zero][INFO] - GPU available: False, used: False
+[2026-04-24 13:52:31,675][lightning.pytorch.utilities.rank_zero][INFO] - TPU available: False, using: 0 TPU cores
+[2026-04-24 13:52:31,676][lightning.pytorch.utilities.rank_zero][INFO] - 💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+[2026-04-24 13:52:31,676][lightning.pytorch.utilities.rank_zero][INFO] - Running in `fast_dev_run` mode: will run the requested loop using 1 batch(es). Logging and checkpointing is suppressed.

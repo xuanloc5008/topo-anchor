@@ -1,0 +1,8 @@
+-r base.txt
+torch
+torchvision
+torchaudio
+lightning
+monai
+einops
+mamba-ssm

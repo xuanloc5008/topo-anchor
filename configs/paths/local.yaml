@@ -1,0 +1,19 @@
+# @package _global_
+paths:
+  root: ${hydra:runtime.cwd}
+  data_dir: ${paths.root}/data
+  raw_image_dir: ${paths.data_dir}/raw/images
+  raw_mask_dir: ${paths.data_dir}/raw/masks
+  processed_image_dir: ${paths.data_dir}/processed/images
+  processed_mask_dir: ${paths.data_dir}/processed/masks
+  cardiac_processed_dir: ${paths.data_dir}/processed/cardiac_challenges
+  manifest_dir: ${paths.data_dir}/manifests
+  split_dir: ${paths.data_dir}/splits
+  topology_cache_dir: ${paths.data_dir}/topology_cache
+  output_dir: ${paths.root}/reports
+  log_dir: ${paths.output_dir}/logs
+  checkpoint_dir: ${paths.output_dir}/checkpoints
+  prediction_dir: ${paths.output_dir}/predictions
+  infer_manifest: null
+  checkpoint_path: null
+  ood_manifest: ${paths.manifest_dir}/ood.csv
