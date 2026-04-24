@@ -14,6 +14,8 @@ data:
     spatial_prob: 0.2
     intensity_prob: 0.15
   require_topology_cache: true
+  verification:
+    require_topology_cache: false
   topology_descriptor_version: v1
   num_workers: 4
   batch_size: 2

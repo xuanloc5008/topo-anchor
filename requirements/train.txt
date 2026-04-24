@@ -1,8 +1,12 @@
 -r base.txt
+# On CUDA 12.8 L40/L40S nodes, install PyTorch first from the cu128 PyTorch index:
+# pip install --index-url https://download.pytorch.org/whl/cu128 torch torchvision torchaudio
 torch
 torchvision
 torchaudio
 lightning
 monai
 einops
+# Install after PyTorch with:
+# pip install --no-build-isolation mamba-ssm
 mamba-ssm

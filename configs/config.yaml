@@ -22,3 +22,4 @@ topology:
     include_persistence_entropy: true
   cache:
     update_manifests: true
+    reuse_existing: true

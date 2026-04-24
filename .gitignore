@@ -1,0 +1,33 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Local environments
+.venv/
+venv/
+env/
+.env
+.env.*
+
+# OS/editor files
+.DS_Store
+
+# Generated data and experiment artifacts
+data/
+outputs/
+reports/
+lightning_logs/
+wandb/
+mlruns/
+checkpoints/
+*.ckpt
+
+# Large local artifacts
+*.nii
+*.nii.gz
+*.npz
+*.npy

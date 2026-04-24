@@ -54,6 +54,38 @@ For a single ~45-48GB L40-class GPU, use the hardware preset:
 python scripts/train.py --config-name config +hardware=l40
 ```
 
+### L40/L40S CUDA Install
+
+If the machine reports NVCC/CUDA 12.8, do not let pip install the default
+PyTorch CUDA 13 wheel. `mamba-ssm` must be compiled against the same CUDA major
+version as PyTorch. A CUDA 13 PyTorch wheel with a CUDA 12.8 compiler will fail
+with a mismatch like:
+
+```text
+The detected CUDA version (12.8) mismatches the version that was used to compile PyTorch (13.0)
+```
+
+Use this install order on a CUDA 12.8 L40/L40S node:
+
+```bash
+conda create -n topoanchor python=3.11 -y
+conda activate topoanchor
+
+pip freeze | grep -E '^(torch|torchvision|torchaudio|triton|nvidia-|cuda-)' | cut -d= -f1 | xargs -r pip uninstall -y
+pip cache purge
+
+pip install --index-url https://download.pytorch.org/whl/cu128 torch torchvision torchaudio
+pip install -e ".[dev,topology,eval,viz]"
+
+pip install ninja packaging wheel setuptools transformers
+export MAX_JOBS=4
+pip install --no-build-isolation mamba-ssm
+
+python scripts/verify_environment.py
+```
+
+The verification output should show `cuda_available=True` and `OK mamba_ssm`.
+
 The preset uses the real `mamba_ssm` backend, GPU mixed precision, larger cardiac patches, gradient accumulation, and pinned persistent DataLoader workers:
 
 ```text

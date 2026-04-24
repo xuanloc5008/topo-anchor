@@ -7,7 +7,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 
 import hydra
-from omegaconf import DictConfig
+from omegaconf import DictConfig, OmegaConf
 
 from topoanchor.data.manifest import assert_disjoint_sample_ids, load_manifest_records
 from topoanchor.data.nifti import load_nifti_shape
@@ -31,15 +31,18 @@ def main(cfg: DictConfig) -> None:
     if ood_manifest.exists() and ood_manifest not in manifests:
         manifests.append(ood_manifest)
     assert_disjoint_sample_ids(manifests)
+    require_topology_cache = bool(
+        OmegaConf.select(cfg, "data.verification.require_topology_cache", default=False)
+    )
 
     total = 0
     for manifest in manifests:
         records = load_manifest_records(
             manifest,
             require_masks=True,
-            require_topology_cache=bool(cfg.data.require_topology_cache),
+            require_topology_cache=require_topology_cache,
             expected_topology_version=str(cfg.data.topology_descriptor_version)
-            if bool(cfg.data.require_topology_cache)
+            if require_topology_cache
             else None,
         )
         for record in records:
@@ -50,13 +53,14 @@ def main(cfg: DictConfig) -> None:
                     f"Image/mask shape mismatch for {record.sample_id}: "
                     f"image={image_shape}, mask={mask_shape}"
                 )
-            if bool(cfg.data.require_topology_cache):
+            if require_topology_cache:
                 validate_cache_record(
                     record.topology_cache_path,
                     expected_version=str(cfg.data.topology_descriptor_version),
                 )
             total += 1
-    print(f"Data verification passed for {total} samples.")
+    topology_note = "with topology cache checks" if require_topology_cache else "without topology cache checks"
+    print(f"Data verification passed for {total} samples {topology_note}.")
 
 
 if __name__ == "__main__":

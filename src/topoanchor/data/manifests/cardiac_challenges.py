@@ -6,6 +6,7 @@ from typing import Iterable
 
 import numpy as np
 import pandas as pd
+from tqdm.auto import tqdm
 
 from topoanchor.data.manifest import REQUIRED_MANIFEST_COLUMNS
 from topoanchor.data.nifti import get_nifti_metadata
@@ -100,6 +101,19 @@ def _remap_labels(mask: np.ndarray, label_map: dict[int, int] | None) -> np.ndar
     return output
 
 
+def _output_pair_paths(output_dir: Path, sample_id: str) -> tuple[Path, Path]:
+    image_path = output_dir / "images" / f"{sample_id}.nii.gz"
+    mask_path = output_dir / "masks" / f"{sample_id}_gt.nii.gz"
+    return image_path, mask_path
+
+
+def _reuse_existing_pair(output_dir: Path, sample_id: str) -> tuple[Path, Path] | None:
+    image_path, mask_path = _output_pair_paths(output_dir, sample_id)
+    if image_path.exists() and mask_path.exists():
+        return image_path.resolve(), mask_path.resolve()
+    return None
+
+
 def _save_3d_pair(
     image: np.ndarray,
     mask: np.ndarray,
@@ -110,12 +124,13 @@ def _save_3d_pair(
     label_map: dict[int, int] | None,
 ) -> tuple[Path, Path]:
     nib = require_package("nibabel", "pip install nibabel")
-    image_dir = output_dir / "images"
-    mask_dir = output_dir / "masks"
+    image_path, mask_path = _output_pair_paths(output_dir, sample_id)
+    if image_path.exists() and mask_path.exists():
+        return image_path.resolve(), mask_path.resolve()
+    image_dir = image_path.parent
+    mask_dir = mask_path.parent
     image_dir.mkdir(parents=True, exist_ok=True)
     mask_dir.mkdir(parents=True, exist_ok=True)
-    image_path = image_dir / f"{sample_id}.nii.gz"
-    mask_path = mask_dir / f"{sample_id}_gt.nii.gz"
     remapped = _remap_labels(mask, label_map)
     nib.save(nib.Nifti1Image(np.asarray(image, dtype=np.float32), affine), str(image_path))
     nib.save(nib.Nifti1Image(remapped.astype(np.int16), affine), str(mask_path))
@@ -144,7 +159,12 @@ def collect_acdc_samples(
         split_dir = database / source_split
         if not split_dir.exists():
             continue
-        for patient_dir in sorted(path for path in split_dir.iterdir() if path.is_dir()):
+        patient_dirs = sorted(path for path in split_dir.iterdir() if path.is_dir())
+        for patient_dir in tqdm(
+            patient_dirs,
+            desc=f"ACDC {source_split}",
+            unit="patient",
+        ):
             patient_id = patient_dir.name
             info = _read_info_cfg(patient_dir / "Info.cfg")
             frame_to_phase = {}
@@ -160,16 +180,21 @@ def collect_acdc_samples(
                     continue
                 phase = frame_to_phase.get(frame_token, f"frame{frame_token}")
                 sample_id = f"acdc_{patient_id}_{phase.lower()}"
-                image_nii, image = _load_nifti(image_path)
-                _, mask = _load_nifti(gt_path)
-                out_image, out_mask = _save_3d_pair(
-                    image,
-                    mask,
-                    affine=image_nii.affine,
-                    output_dir=Path(output_dir) / "acdc",
-                    sample_id=sample_id,
-                    label_map=ACDC_TO_TARGET,
-                )
+                dataset_output_dir = Path(output_dir) / "acdc"
+                existing_pair = _reuse_existing_pair(dataset_output_dir, sample_id)
+                if existing_pair is not None:
+                    out_image, out_mask = existing_pair
+                else:
+                    image_nii, image = _load_nifti(image_path)
+                    _, mask = _load_nifti(gt_path)
+                    out_image, out_mask = _save_3d_pair(
+                        image,
+                        mask,
+                        affine=image_nii.affine,
+                        output_dir=dataset_output_dir,
+                        sample_id=sample_id,
+                        label_map=ACDC_TO_TARGET,
+                    )
                 samples.append(
                     CardiacChallengeSample(
                         sample_id=sample_id,
@@ -223,7 +248,8 @@ def collect_mnms1_samples(
     root = Path(root).expanduser()
     metadata_lookup = _metadata_lookup(metadata_csv, sample_id_columns=metadata_sample_id_columns)
     samples: list[CardiacChallengeSample] = []
-    for source_split, case_dir in _iter_mnms1_case_dirs(root, include_unlabelled=include_unlabelled):
+    case_dirs = list(_iter_mnms1_case_dirs(root, include_unlabelled=include_unlabelled))
+    for source_split, case_dir in tqdm(case_dirs, desc="M&Ms1", unit="case"):
         case_id = case_dir.name
         image_path = case_dir / f"{case_id}_sa.nii.gz"
         gt_path = case_dir / f"{case_id}_sa_gt.nii.gz"
@@ -249,16 +275,21 @@ def collect_mnms1_samples(
         for frame_order, frame_idx in enumerate(frame_indices):
             phase = "ED" if frame_order == 0 else "ES" if frame_order == 1 else f"frame{frame_idx:02d}"
             sample_id = f"mnms1_{case_id}_{phase.lower()}"
-            image_3d = image if image.ndim == 3 else image[..., frame_idx]
-            mask_3d = mask if mask.ndim == 3 else mask[..., frame_idx]
-            out_image, out_mask = _save_3d_pair(
-                image_3d,
-                mask_3d,
-                affine=image_nii.affine,
-                output_dir=Path(output_dir) / "mnms1",
-                sample_id=sample_id,
-                label_map=None,
-            )
+            dataset_output_dir = Path(output_dir) / "mnms1"
+            existing_pair = _reuse_existing_pair(dataset_output_dir, sample_id)
+            if existing_pair is not None:
+                out_image, out_mask = existing_pair
+            else:
+                image_3d = image if image.ndim == 3 else image[..., frame_idx]
+                mask_3d = mask if mask.ndim == 3 else mask[..., frame_idx]
+                out_image, out_mask = _save_3d_pair(
+                    image_3d,
+                    mask_3d,
+                    affine=image_nii.affine,
+                    output_dir=dataset_output_dir,
+                    sample_id=sample_id,
+                    label_map=None,
+                )
             samples.append(
                 CardiacChallengeSample(
                     sample_id=sample_id,
@@ -295,7 +326,8 @@ def collect_mnms2_samples(
     dataset_root = root / "dataset" if (root / "dataset").exists() else root
     metadata_lookup = _metadata_lookup(metadata_csv, sample_id_columns=metadata_sample_id_columns)
     samples: list[CardiacChallengeSample] = []
-    for patient_dir in sorted(path for path in dataset_root.iterdir() if path.is_dir()):
+    patient_dirs = sorted(path for path in dataset_root.iterdir() if path.is_dir())
+    for patient_dir in tqdm(patient_dirs, desc="M&Ms2", unit="patient"):
         patient_id = patient_dir.name
         metadata = metadata_lookup.get(patient_id, {})
         vendor = _first_metadata_value(metadata, metadata_vendor_columns, default="MMS2_unknown_vendor")
@@ -308,17 +340,22 @@ def collect_mnms2_samples(
                 gt_path = patient_dir / f"{patient_id}_{view}_{phase}_gt.nii.gz"
                 if not image_path.exists() or not gt_path.exists():
                     continue
-                image_nii, image = _load_nifti(image_path)
-                _, mask = _load_nifti(gt_path)
                 sample_id = f"mnms2_{patient_id}_{view.lower()}_{phase.lower()}"
-                out_image, out_mask = _save_3d_pair(
-                    image,
-                    mask,
-                    affine=image_nii.affine,
-                    output_dir=Path(output_dir) / "mnms2",
-                    sample_id=sample_id,
-                    label_map=None,
-                )
+                dataset_output_dir = Path(output_dir) / "mnms2"
+                existing_pair = _reuse_existing_pair(dataset_output_dir, sample_id)
+                if existing_pair is not None:
+                    out_image, out_mask = existing_pair
+                else:
+                    image_nii, image = _load_nifti(image_path)
+                    _, mask = _load_nifti(gt_path)
+                    out_image, out_mask = _save_3d_pair(
+                        image,
+                        mask,
+                        affine=image_nii.affine,
+                        output_dir=dataset_output_dir,
+                        sample_id=sample_id,
+                        label_map=None,
+                    )
                 samples.append(
                     CardiacChallengeSample(
                         sample_id=sample_id,
